@@ -1,8 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:my_portfolio/provider/portfolioProvider.dart';
+import 'package:provider/provider.dart';
 import './pages/home.dart';
 import './pages/skill.dart';
 import './pages/about.dart';
+import './pages/recentWork.dart';
+import './pages/contact.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,12 +15,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My portfolio',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(
+      create: (_) => PortfolioProvider(),
+      child: MaterialApp(
+        title: 'My portfolio',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        routes: {'/': (context) => MyHomePage()},
       ),
-      home: MyHomePage(),
     );
   }
 }
@@ -29,15 +36,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int i = 0;
-  bool pageIsScrolling = false;
-  final PageController pageController = PageController(initialPage: 0);
+  int i;
+  bool pageIsScrolling;
+  PageController pageController;
 
   List<Widget> pages = [
     HomePage(),
     AboutPage(),
-    SkillPage()
+    SkillPage(),
+    RecentWorkPage(),
+    ContactPage()
   ];
+  @override
+  void initState() {
+    super.initState();
+    i = 0;
+    pageIsScrolling = false;
+    pageController = PageController();
+  }
 
   void _onScroll(double offset) {
     if (pageIsScrolling == false) {
@@ -59,6 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    int portfolioIndex = Provider.of<PortfolioProvider>(context).index;
     return Scaffold(
       body: Container(
         child: Listener(
@@ -79,6 +96,12 @@ class _MyHomePageState extends State<MyHomePage> {
               scrollDirection: Axis.vertical,
               itemCount: pages.length,
               itemBuilder: (BuildContext context, int index) {
+                if (portfolioIndex == 1) {
+                  portfolioIndex = 0;
+                  pageController.nextPage(
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.easeInOut);
+                }
                 i = index;
                 return pages[index];
               },
